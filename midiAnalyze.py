@@ -2,7 +2,7 @@ from music21 import converter, corpus, instrument, midi, note, chord, pitch, str
 
 class MIDI:
     def __init__(self, name):
-        path = 'C:\\Users\\chois\\Desktop\\KAIST\\연구\\2학년 겨울학기 김민수 교수님 개별연구\\dataset-music\\MMD_MIDI\\'+name[0]+'\\'+name[1]+'\\'+name[2]+'\\'+name
+        path = '~/MMD_MIDI/'+name[0]+'/'+name[1]+'/'+name[2]+'/'+name
         self.mf = None
         self.midi = self.openMidi(path, True) 
 
