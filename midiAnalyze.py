@@ -2,9 +2,9 @@ from music21 import converter, corpus, instrument, midi, note, chord, pitch, str
 
 class MIDI:
     def __init__(self, name):
-        path = '~/MMD_MIDI/'+name[0]+'/'+name[1]+'/'+name[2]+'/'+name
+        self.path = '/home/ec2-user/Dataset/'+name[0]+'/'+name[1]+'/'+name[2]+'/'+name
         self.mf = None
-        self.midi = self.openMidi(path, True) 
+        self.midi = self.openMidi(self.path, True) 
 
 
     #open midi file
@@ -45,6 +45,12 @@ class MIDI:
     def timeSignature(self):
         timeSignature = self.midi.getTimeSignatures()[0]
         return str(timeSignature.beatCount) + '/' + str(timeSignature.denominator)
+
+    def tempo(self):
+        midi_file = music21.converter.parse(self.path)
+        tempo = midi_file.analyze('tempo')
+
+        return tempo
 
     #return chords list
     def extractChords(self):
@@ -123,4 +129,5 @@ if __name__=='__main__':
     print(M.instrument())
     print(M.key())
     print(M.extractChords())
+    print(M.timeSignature())
 
