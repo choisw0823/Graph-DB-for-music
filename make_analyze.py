@@ -22,17 +22,20 @@ for key, values in list(M.title_artist_data.items()):
         print('Left = ', l)
         result = sp.get_info(values)
         midi_result = {}
-        if spotify is None:
+        if result is None:
+            time.sleep(1)
             continue
+            
         midi = MIDI(key)
         midi_result['instrument'] = midi.instrument()
         midi_result['key'] = midi.key()
         midi_result['chords'] = midi.extractChords()
         result['feature']['midi'] = midi_result
-        time.sleep(0.5)
+        time.sleep(1)
         
         with open("/home/ec2-user/Graph-DB-for-music/analyze_result.json", "a") as f:
-            f.write(json.dumps(result))
+            f.write(json.dumps(result, default=str))
+            f.write('\n')
         # track_dic = sp.get_id(name=values['title'], type='track')
 
         
