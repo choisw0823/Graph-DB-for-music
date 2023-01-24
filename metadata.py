@@ -30,7 +30,10 @@ class metadata:
 
             # Iterate through each row in the file
             for row in reader:
-                self.md5_to_sid[row[0]+'.mid'] = {header[i]: row[i] for i in range(1, len(header))}
+                try:
+                    self.md5_to_sid[row[0]+'.mid'].append({header[2]: row[2]})
+                except KeyError:
+                    self.md5_to_sid[row[0]+'.mid'] = []
         
         #return self.md5_to_sid
 

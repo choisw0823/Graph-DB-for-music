@@ -1,6 +1,6 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-
+import json
 
 
 class spotify:
@@ -10,13 +10,69 @@ class spotify:
 
     def get_id(self,name, type):
         if (type=='artist'):
-            return self.sp.search(q=name, type=type, limit=1)['artists']['items'][0]['id']
+            try:
+                return self.sp.search(q=name, type=type, limit=1)['artists']['items'][0]['id']
+            except Exception as e:
+                print('Error occured : ',json.dumps(self.sp.search(q=name, type=type, limit=1)))
+                return None
         elif (type=='track'):
-            return self.sp.search(q=name, type=type, limit=1)['tracks']['items'][0]['id']
+            try:
+                info = self.sp.search(q=name, type=type, limit=1)
+                print('rate : ', self.sp.rate_limiting)
+                return {'artist':info['tracks']['items'][0]['artists'][0]['id'], 'track' : info['tracks']['items'][0]['id']}
+            except Exception as e:
+                print('Error occured : ',json.dumps(self.sp.search(q=name, type=type, limit=1)))
+                return None
+                
         elif (type=='album'):
-            return self.sp.search(q=name, type=type, limit=1)['albums']['items'][0]['id']
+            try:
+                return self.sp.search(q=name, type='track', limit=1)['tracks']['items'][0]['album']['id']
+            except Exception as e:
+                print('Error occured : ', json.dumps(self.sp.search(q=name, type=type, limit=1)))
+                return None
     
-    
+    def get_info(self, values):
+        try:
+            ret = {'track':None, 'artist':[], 'album':None, 'feature':None}
+            track_info = self.sp.search(q=values['title'], type='track', limit=1)
+            artist_info = self.sp.search(q=values['artist'], type='artist', limit=1)
+            album_info = None
+            for artist in  track_info['tracks']['items'][0]['artists']:
+                if artist['id'] == artist_info['artists']['items'][0]['id']:
+                    artists_info = self.sp.artists([i['id'] for i in track_info['tracks']['items'][0]['artists']])
+                    album_info = self.get_album_info(track_info['tracks']['items'][0]['album']['id'])
+                    audio_feature = self.get_audio_features(track_info['tracks']['items'][0]['id'])
+
+                    print('track')
+                    ret['track'] = {'id':track_info['tracks']['items'][0]['id'], 'name':track_info['tracks']['items'][0]['name'], 'popularity':track_info['tracks']['items'][0]['popularity'], 'release_date':track_info['tracks']['items'][0]['album']['release_date']}
+                    print('artist')
+                    ret['artist'] = [{'id':i['id'],'name': i['name'], 'followers': i['followers']['total'], 'genre':i['genres'], 'popularity': i['popularity']} for i in artists_info['artists']]
+                    print('album')
+                    ret['album'] = {'type':album_info['album_type'], 'id':album_info['id'], 'name':album_info['name'], 'popularity':album_info['popularity'], 'release_date':album_info['release_date']}
+                    print('feature')
+                    ret['feature'] = {'danceability':audio_feature[0]['danceability'], 'energy':audio_feature[0]['energy'],'loudness':audio_feature[0]['loudness'],'valence':audio_feature[0]['valence'],'tempo':audio_feature[0]['tempo']}
+                    print('finish')
+                    
+                    return ret
+            return None
+        except Exception as e:
+            print('Error Occured : ', e)
+            return None
+
+       
+
+    def get_track_info(self, track_id):
+        return self.sp.track(track_id)
+
+    def get_album_info(self, album_id):
+        return self.sp.album(album_id)
+
+    def get_artist_info(self, artist_id):
+        return self.sp.artist(artist_id)
+
+    def get_audio_features(self, track_id):
+        return self.sp.audio_features(track_id)
+
 
 if __name__=='__main__':
     sp = spotify()
