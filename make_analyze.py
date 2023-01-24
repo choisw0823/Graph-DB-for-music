@@ -6,8 +6,8 @@ import json
 import time
 
 M = metadata()
-i=0
 sp = spotify()
+l = len(M.title_artist_data)
 
 for key, values in list(M.title_artist_data.items()):
     # track_info = None
@@ -16,21 +16,28 @@ for key, values in list(M.title_artist_data.items()):
     # artist_info = None
     # if i==10:
     #     break
-    i+=1
+    l-=1
+    
     try:
-        print(i, values)
-        spotify_result = sp.get_info(values)
+        print('Left = ', l)
+        result = sp.get_info(values)
         midi_result = {}
-        if spotify is not None:
-            midi = MIDI(key)
-            midi_result['instrument'] = midi.instrument()
-            
+        if spotify is None:
+            continue
+        midi = MIDI(key)
+        midi_result['instrument'] = midi.instrument()
+        midi_result['key'] = midi.key()
+        midi_result['chords'] = midi.extractChords()
+        result['feature']['midi'] = midi_result
+        time.sleep(0.5)
         
-        time.sleep(2)
+        with open("/home/ec2-user/Graph-DB-for-music/analyze_result.json", "a") as f:
+            f.write(json.dumps(result))
         # track_dic = sp.get_id(name=values['title'], type='track')
 
         
         
+
         # artist_id = sp.get_id(name=values['artist'], type='artist')
         # print(track_dic, artist_id)
         # print(artist_id == track_dic['artist'])
@@ -41,7 +48,8 @@ for key, values in list(M.title_artist_data.items()):
         #     artist_info = sp.get_artist_info(track_dic['artist'])
         #     print('track : ', track_info)    
         
-    except (KeyError, TypeError):
+    except Exception as e:
+        print('Error occured during make_analyze.py : ', e)
         continue
 
 
