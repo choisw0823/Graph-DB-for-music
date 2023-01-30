@@ -1,5 +1,4 @@
 from midiAnalyze import MIDI
-from neptune import Neptune
 from spotify import spotify
 from metadata import metadata
 import json
@@ -17,9 +16,10 @@ for key, values in list(M.title_artist_data.items()):
     # if i==10:
     #     break
     l-=1
-    
+    if (l>=123612):
+        continue
     try:
-        print('Left = ', l)
+        print('Left = ', l, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
         result = sp.get_info(values)
         midi_result = {}
         if result is None:

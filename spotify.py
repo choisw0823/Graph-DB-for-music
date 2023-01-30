@@ -23,32 +23,36 @@ class spotify:
             except Exception as e:
                 print('Error occured during get_id(track): ', e)
                 return None
-                
         elif (type=='album'):
             try:
                 return self.sp.search(q=name, type='track', limit=1)['tracks']['items'][0]['album']['id']
             except Exception as e:
                 print('Error occured during get_id(album): ', e)
                 return None
-    
+    def get_artist_search(self, name):
+        search = self.sp.search(q=name, type='artist', limit=1)['artists']['items'][0]
+        ret = {'id':search['id'],'name': search['name'], 'followers': search['followers']['total'], 'genre':search['genres'], 'popularity': search['popularity']}
+        return ret
+
     def get_info(self, values):
         try:
             ret = {'track':None, 'artist':[], 'album':None, 'feature':None}
             track_info = self.sp.search(q=values['title'], type='track', limit=1)
             artist_info = self.sp.search(q=values['artist'], type='artist', limit=1)
             album_info = None
-            for artist in  track_info['tracks']['items'][0]['artists']:
-                if artist['id'] == artist_info['artists']['items'][0]['id']:
-                    artists_info = self.sp.artists([i['id'] for i in track_info['tracks']['items'][0]['artists']])
-                    album_info = self.get_album_info(track_info['tracks']['items'][0]['album']['id'])
-                    audio_feature = self.get_audio_features(track_info['tracks']['items'][0]['id'])
+            for track in track_info['tracks']['items']:
+                for artist in  track['artists']:
+                    if artist['id'] == artist_info['artists']['items'][0]['id']:
+                        artists_info = self.sp.artists([i['id'] for i in track['artists']])
+                        album_info = self.get_album_info(track['album']['id'])
+                        audio_feature = self.get_audio_features(track['id'])
 
-                    ret['track'] = {'id':track_info['tracks']['items'][0]['id'], 'name':track_info['tracks']['items'][0]['name'], 'popularity':track_info['tracks']['items'][0]['popularity'], 'release_date':track_info['tracks']['items'][0]['album']['release_date']}
-                    ret['artist'] = [{'id':i['id'],'name': i['name'], 'followers': i['followers']['total'], 'genre':i['genres'], 'popularity': i['popularity']} for i in artists_info['artists']]
-                    ret['album'] = {'type':album_info['album_type'], 'id':album_info['id'], 'name':album_info['name'], 'popularity':album_info['popularity'], 'release_date':album_info['release_date']}
-                    ret['feature'] = {'danceability':audio_feature[0]['danceability'], 'energy':audio_feature[0]['energy'],'loudness':audio_feature[0]['loudness'],'valence':audio_feature[0]['valence'],'tempo':audio_feature[0]['tempo']}
+                        ret['track'] = {'id':track['id'], 'name':track['name'], 'popularity':track['popularity'], 'release_date':track['album']['release_date']}
+                        ret['artist'] = [{'id':i['id'],'name': i['name'], 'followers': i['followers']['total'], 'genre':i['genres'], 'popularity': i['popularity']} for i in artists_info['artists']]
+                        ret['album'] = {'type':album_info['album_type'], 'id':album_info['id'], 'name':album_info['name'], 'popularity':album_info['popularity'], 'release_date':album_info['release_date']}
+                        ret['feature'] = {'danceability':audio_feature[0]['danceability'], 'energy':audio_feature[0]['energy'],'loudness':audio_feature[0]['loudness'],'valence':audio_feature[0]['valence'],'tempo':audio_feature[0]['tempo']}
                     
-                    return ret
+                        return ret
             return None
         except Exception as e:
             print('Error Occured during get_info : ', e)
