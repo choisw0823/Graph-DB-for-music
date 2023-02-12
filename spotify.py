@@ -37,7 +37,7 @@ class spotify:
     def get_info(self, values):
         try:
             ret = {'track':None, 'artist':[], 'album':None, 'feature':None}
-            track_info = self.sp.search(q=values['title'], type='track', limit=1)
+            track_info = self.sp.search(q=values['title'], type='track', limit=10)
             artist_info = self.sp.search(q=values['artist'], type='artist', limit=1)
             album_info = None
             for track in track_info['tracks']['items']:
@@ -58,7 +58,14 @@ class spotify:
             print('Error Occured during get_info : ', e)
             return None
 
-       
+    def get_related_artist(self, artist_id):
+        try:
+            related_artists = self.sp.artist_related_artists(artist_id)
+            return related_artists
+        
+        except Exception as e:
+            print('Error Occured during get_related_artist : ', e)
+            return None
 
     def get_track_info(self, track_id):
         return self.sp.track(track_id)
@@ -76,3 +83,4 @@ class spotify:
 if __name__=='__main__':
     sp = spotify()
     print(sp.sp.search(q='One call away', type='track'))
+    

@@ -26,13 +26,15 @@ except Exception as e:
 length = len(cache)
 cnt = 0
 flag = 0
+line = 0
 for content in contents:
-    if content['artist'][0]['name'] == 'Allman Brothers Band':
+    if line==411:
         flag = 1
     if flag==0:
         print('Passed : ', content['artist'][0]['name'])
+        line += 1
         continue
-    
+    line+=1
     try:
         page = 1
         total_page=1
@@ -50,7 +52,7 @@ for content in contents:
                             #print(event)
                             if (event['location']['@type'] != 'Place'):
                                 continue
-                            result = {'eventName' : event['name'], 'startDate':event['startDate'], 'venueName':event['location']['name'], 'country':event['location']['address']['addressCountry'],\
+                            result = {'eventName' : event['name'], 'startDate':event['startDate'], 'endDate':event['endDate'], 'venueName':event['location']['name'], 'country':event['location']['address']['addressCountry'],\
                                  'city':event['location']['address']['addressLocality'] }
                         
                             if 'addressRegion' in event['location']['address'].keys():
@@ -94,7 +96,7 @@ for content in contents:
 
                                     
                             #print('Nope') 
-                        print('Artist Page Finished : ', artist_info['name'], 'page : ', str(page), 'count : ', str(cnt), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+                        print('Artist Page Finished : ', artist_info['name'], 'page : ', str(page), 'count : ', str(cnt), 'line : ', str(line),  time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
                         time.sleep(3)   
                     except Exception as e:
                         print('Error Occured during event_analyze.py while : ', e)
