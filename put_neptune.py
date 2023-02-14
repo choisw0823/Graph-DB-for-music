@@ -20,21 +20,21 @@ contents3=[]
 #         l = json.loads(line)
 #         genres.append(l)
 
-with open('/home/ec2-user/Graph-DB-for-music/analyze_result.json', 'rt', encoding='UTF8') as f:
-    for line in f:
-        l = json.loads(line)
-        contents.append(l)
+# with open('/home/ec2-user/Graph-DB-for-music/analyze_result.json', 'rt', encoding='UTF8') as f:
+#     for line in f:
+#         l = json.loads(line)
+#         contents.append(l)
 
 
-with open('/home/ec2-user/Graph-DB-for-music/event_analyze_result.json', 'rt', encoding='UTF8') as f:
-    for line in f:
-        l = json.loads(line)
-        contents2.append(l)
+# with open('/home/ec2-user/Graph-DB-for-music/event_analyze_result.json', 'rt', encoding='UTF8') as f:
+#     for line in f:
+#         l = json.loads(line)
+#         contents2.append(l)
 
-with open('/home/ec2-user/Graph-DB-for-music/get_related_artist_result.json', 'rt', encoding='UTF8') as f:
-    for line in f:
-        l = json.loads(line)
-        contents3.append(l)
+# with open('/home/ec2-user/Graph-DB-for-music/get_related_artist_result.json', 'rt', encoding='UTF8') as f:
+#     for line in f:
+#         l = json.loads(line)
+#         contents3.append(l)
 
 def vertex_analyze_result():
     print('Make Vertexes in analyze_result.json')
@@ -413,7 +413,7 @@ def edge_get_related_artist_result():
 # vertex_event_analyze_result()
 #edge_event_analyze_result()
 # vertex_get_related_artist_result()
-edge_get_related_artist_result()
+# edge_get_related_artist_result()
 # s = 'Altice Arena'+'Portugal'
 # hash = hashlib.md5(s.encode()).hexdigest()  
 # venue_id = N.find_id('venue', 'id', hash)
@@ -438,3 +438,39 @@ edge_get_related_artist_result()
 # print(len(N.get_nodes_by_label('city')))
 # print(len(N.get_nodes_by_label('state')))
 # print(len(N.get_nodes_by_label('venue')))
+
+with open('./test2', 'wt') as f:
+    total = {}
+    split = ['.', ',', '/', '(', ')', '-', "'", '"', '-', '_', '#', '+','\\','1','2','3','4','5','6','7','8','9','0','<', '>', '{', '}', '=', '*' ]
+    for instrument in (N.g.V().hasLabel('instrument').values('name').toList()):
+        # if instrument not in total.keys():
+        #     total[instrument] = 1
+        # else:
+        #     total[instrument]+=1
+        for s in split:
+            r = instrument.lower()
+            r = r.replace(s, ' ')
+        
+        li = r.split()
+        for l in li:
+            for s in split:
+                l = l.replace(s, ' ')
+            
+            for i in l.split():
+                if i in total.keys():
+                    total[i] += 1
+                else:
+                    total[i] = 1
+                    
+    # result = []
+    # for i in total.keys():
+    #     print(i)
+        
+    #     a = input('Y or N : ')
+    #     if a == 'Y':
+    #         result.append(i)
+    # print(result)
+    #print(total)
+    f.write(json.dumps(list(total.keys())))
+
+
