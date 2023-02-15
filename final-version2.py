@@ -125,6 +125,7 @@ if result is not None:
 end = time.time()
 print('Search For Location Finished : ', datetime.timedelta(seconds=end-start) )
 
+
 #Search For Related Artist
 start = time.time()
 result = None
@@ -244,120 +245,120 @@ if trackId is not None:
 # exit()
 
 
-result1 = None
-result2 = None
-result3 = None
-with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
-            mapping = json.loads(f.readline())
-start = time.time()
-for track in N.g.V().hasLabel('track').toList():
-    if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
-        inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
+# result1 = None
+# result2 = None
+# result3 = None
+# with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
+#             mapping = json.loads(f.readline())
+# start = time.time()
+# for track in N.g.V().hasLabel('track').toList():
+#     if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
+#         inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
 
-            audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
-            if cosine_similarity(N.g.V(track).out('track_feature').valueMap().next(), audio_feature, 0.7):
-                if result1 is None:
-                    result1 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-                else:
-                    result1 = result1 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#             audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
+#             if cosine_similarity(N.g.V(track).out('track_feature').valueMap().next(), audio_feature, 0.7):
+#                 if result1 is None:
+#                     result1 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#                 else:
+#                     result1 = result1 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
 
             
-    if inp['audio_feature']['instrument'] is not None:
-        if get_similarity(N.g.V(track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > 0.6:
-            if result2 is None:
-                result2 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-            else:
-                result2 = result2 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-    if inp['audio_feature']['chords'] is not None:
-        if jaccard_similarity_chord(set(N.g.V(track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > 0.6:
-            if result3 is None:
-                result3 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-            else:
-                result3 = result3  | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-end = time.time()
-print('Search For track Finished : ', datetime.timedelta(seconds=end-start))
+#     if inp['audio_feature']['instrument'] is not None:
+#         if get_similarity(N.g.V(track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > 0.6:
+#             if result2 is None:
+#                 result2 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#             else:
+#                 result2 = result2 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#     if inp['audio_feature']['chords'] is not None:
+#         if jaccard_similarity_chord(set(N.g.V(track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > 0.6:
+#             if result3 is None:
+#                 result3 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#             else:
+#                 result3 = result3  | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+# end = time.time()
+# print('Search For track Finished : ', datetime.timedelta(seconds=end-start))
 
-for r in [result1, result2, result3]:
-    if r is not None:
-        if len(venue_set) == 0:
-            venue_set = r
-        else:
-            venue_set = venue_set & r
+# for r in [result1, result2, result3]:
+#     if r is not None:
+#         if len(venue_set) == 0:
+#             venue_set = r
+#         else:
+#             venue_set = venue_set & r
 
 #Search For Audio_feature
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
-#     inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
-#     audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
-#     res = N.g.V().hasLabel('audio_feature').valueMap().toList()
+start = time.time()
+result=None
+threshold = 0.7
+if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
+    inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
+    audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
+    res = N.g.V().hasLabel('audio_feature').valueMap().toList()
     
 
-#     for feature in res:
-#         s = cosine_similarity(feature, audio_feature, threshold)
-#         if s:
-#             s = feature['id'][0]
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result | set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-# print(len(result))   
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result
+    for feature in res:
+        s = cosine_similarity(feature, audio_feature, threshold)
+        if s:
+            s = feature['id'][0]
+            if result is None:
+                result = set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+            else:
+                result = result | set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#print(len(result))   
+if result is not None and len(venue_set) != 0:
+    venue_set = set(result) & venue_set
+elif result is not None:
+    venue_set = result
 
-# end = time.time()
-#print('Search For audio feature Finished : ', datetime.timedelta(seconds=end-start))
-# print(venue_set)
-#exit()
+end = time.time()
+print('Search For audio feature Finished : ', datetime.timedelta(seconds=end-start))
+#print(venue_set)
 
 #Search for Instrument
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['instrument'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
-#     for track in N.g.V().hasLabel('track').values('id').toList():
-#         with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
-#             mapping = json.loads(f.readline())
+start = time.time()
+result=None
+threshold = 0.6
+if inp['audio_feature']['instrument'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
+    with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
+        mapping = json.loads(f.readline())
+    for track in N.g.V().hasLabel('track').values('id').toList():
+        
 
-#         if get_similarity(N.g.V().hasLabel('track').has('id', track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > threshold:
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+        if get_similarity(N.g.V().hasLabel('track').has('id', track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > threshold:
+            if result is None:
+                result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+            else:
+                result = result | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
     
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result  
+if result is not None and len(venue_set) != 0:
+    venue_set = set(result) & venue_set
+elif result is not None:
+    venue_set = result  
 
-# end = time.time()
-# print('Search For instrument Finished : ', datetime.timedelta(seconds=end-start))
-# #print(venue_set)
-# # time.sleep(3)
+end = time.time()
+print('Search For instrument Finished : ', datetime.timedelta(seconds=end-start))
+#print(venue_set)
+# time.sleep(3)
 
-# #Search For Chords
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['chords'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
-#     #print(inp['audio_feature']['chords'])
-#     for track in N.g.V().hasLabel('track').values('id').toList():
-#         if jaccard_similarity_chord(set(N.g.V().hasLabel('track').has('id', track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > threshold:
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result  | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result 
+#Search For Chords
+start = time.time()
+result=None
+threshold = 0.6
+if inp['audio_feature']['chords'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
+    #print(inp['audio_feature']['chords'])
+    for track in N.g.V().hasLabel('track').values('id').toList():
+        if jaccard_similarity_chord(set(N.g.V().hasLabel('track').has('id', track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > threshold:
+            if result is None:
+                result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+            else:
+                result = result  | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+if result is not None and len(venue_set) != 0:
+    venue_set = set(result) & venue_set
+elif result is not None:
+    venue_set = result 
 
-# end = time.time()
+end = time.time()
 
-# print('Search For chords Finished : ', datetime.timedelta(seconds=end-start))
+print('Search For chords Finished : ', datetime.timedelta(seconds=end-start))
 
 v = []
 #print(venue_set)

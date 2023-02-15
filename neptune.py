@@ -2,6 +2,8 @@ from gremlin_python import statics
 from gremlin_python.structure.graph import Graph
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from gremlin_python.process.traversal import P
+
 # from gremlin_python.structure.io import graphson, kryo
 import networkx as nx
 

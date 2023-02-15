@@ -4,6 +4,7 @@ import numpy as np
 import json 
 import time
 import datetime
+import pandas as pd
 
 
 #for audio_feature
@@ -99,12 +100,14 @@ inp = {'artistName' : None,'artistId':None, 'popularity':None, 'followers':None,
 
 inp['country'] = 'UK'
 #inp['state']= 'MN'
-inp['artistId'] = '4tiFScdzVOm0kGSq4d0l2K'
-inp['genre'] = ["early music", "english renaissance", "renaissance"]
+inp['artistId'] = '40Yq4vzPs9VNUrIBG5Jr2i'
+#inp['genre'] = ["early music", "english renaissance", "renaissance"]
 #inp['popularity'] = 72
-inp['track']['id'] = '5SuRjWCCaRYJwUI9TDHCUe'
-#inp['audio_feature']['instrument'] =  ["Drums (Standard Kit)", "Electric Bass", "Overdrive Guitar", "Bass Guitar", "Ava Adore", "Clean Guitar", "Optimised for XG", "Electric Guitar", "Midi File by Sayed Hoda", "Bass Drum (Rock Kit)", "=========================", "Song by Billy Corgan/ Smashing Pumpkins", "AHODA@compuserve.com"]
-#inp['audio_feature']['chords'] = ['V64', 'I53', 'ii', 'v', 'I64', 'i', 'III53', 'iii43', 'V53', 'i53', 'iv7', 'III6', 'V', 'VII53']
+inp['track']['id'] = '6bVB2MGR7LcotAIB1vfpw6'
+inp['audio_feature']['instrument'] = ["Drums (Standard Kit)", "Electric Bass", "Overdrive Guitar", "Bass Guitar", \
+    "Ava Adore", "Clean Guitar", "Optimised for XG", "Electric Guitar", "Midi File by Sayed Hoda", "Bass Drum (Rock Kit)"]
+inp['audio_feature']['chords'] = ['V64', 'I53', 'ii', 'v', 'I64', 'i', 'III53', 'iii43', 'V53', \
+     'i53', 'iv7', 'III6', 'V', 'VII53']
 venue_set = set()
 result = None
 
@@ -124,6 +127,7 @@ if result is not None:
     venue_set = set(result)
 end = time.time()
 print('Search For Location Finished : ', datetime.timedelta(seconds=end-start) )
+
 
 #Search For Related Artist
 start = time.time()
@@ -213,15 +217,15 @@ if inp['track']['id'] is not None:
     trackId = inp['track']['id']
 if trackId is not None:
     
-    audio_feature = N.g.V().hasLabel('audio_feature').has('id', trackId).valueMap().next()
-    audio_feature = [audio_feature['tempo'][0], audio_feature['danceability'][0], audio_feature['loudness'][0], audio_feature['valence'][0], audio_feature['energy'][0]]
+    #audio_feature = N.g.V().hasLabel('audio_feature').has('id', trackId).valueMap().next()
+    #audio_feature = [audio_feature['tempo'][0], audio_feature['danceability'][0], audio_feature['loudness'][0], audio_feature['valence'][0], audio_feature['energy'][0]]
     inst = N.g.V().hasLabel('track').has('id', trackId).out('track_instrument').values('name').toList()
     chords = N.g.V().hasLabel('track').has('id', trackId).out('track_chord').values('chord').toList()
-    inp['audio_feature']['tempo'] = audio_feature[0]
-    inp['audio_feature']['danceability'] = audio_feature[1]
-    inp['audio_feature']['loudness'] = audio_feature[2]
-    inp['audio_feature']['valence'] = audio_feature[3]
-    inp['audio_feature']['energy'] = audio_feature[4]
+    # inp['audio_feature']['tempo'] = audio_feature[0]
+    # inp['audio_feature']['danceability'] = audio_feature[1]
+    # inp['audio_feature']['loudness'] = audio_feature[2]
+    # inp['audio_feature']['valence'] = audio_feature[3]
+    # inp['audio_feature']['energy'] = audio_feature[4]
     inp['audio_feature']['instrument'] = inst
     inp['audio_feature']['chords'] = chords
 
@@ -244,126 +248,186 @@ if trackId is not None:
 # exit()
 
 
-result1 = None
-result2 = None
-result3 = None
-with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
-            mapping = json.loads(f.readline())
-start = time.time()
-for track in N.g.V().hasLabel('track').toList():
-    if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
-        inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
+# result1 = None
+# result2 = None
+# result3 = None
+# with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
+#             mapping = json.loads(f.readline())
+# start = time.time()
+# for track in N.g.V().hasLabel('track').toList():
+#     if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
+#         inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
 
-            audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
-            if cosine_similarity(N.g.V(track).out('track_feature').valueMap().next(), audio_feature, 0.7):
+#             audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
+#             if cosine_similarity(N.g.V(track).out('track_feature').valueMap().next(), audio_feature, 0.7):
+#                 if result1 is None:
+#                     result1 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#                 else:
+#                     result1 = result1 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+
+            
+#     if inp['audio_feature']['instrument'] is not None:
+#         if get_similarity(N.g.V(track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > 0.6:
+#             if result2 is None:
+#                 result2 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#             else:
+#                 result2 = result2 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#     if inp['audio_feature']['chords'] is not None:
+#         if jaccard_similarity_chord(set(N.g.V(track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > 0.6:
+#             if result3 is None:
+#                 result3 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#             else:
+#                 result3 = result3  | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+# end = time.time()
+# print('Search For track Finished : ', datetime.timedelta(seconds=end-start))
+
+# for r in [result1, result2, result3]:
+#     if r is not None:
+#         if len(venue_set) == 0:
+#             venue_set = r
+#         else:
+#             venue_set = venue_set & r
+
+#Search For Audio_feature
+start = time.time()
+result=None
+threshold = 0.7
+if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
+    inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
+    audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
+    res = N.g.V().hasLabel('audio_feature').valueMap().toList()
+    
+
+    for feature in res:
+        s = cosine_similarity(feature, audio_feature, threshold)
+        if s:
+            s = feature['id'][0]
+            if result is None:
+                result = set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+            else:
+                result = result | set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+#print(len(result)) 
+elif trackId is not None:
+    #N.g.V().hasLabel('audio_feature').has('id', trackId).outE('similarity').as_('edge').where('edge'.property('value') > 0.7).inV().valueMap().toList()
+    result = set(N.g.V().hasLabel('audio_feature').has('id', trackId).outE('similarity').has('value', neptune.P.gt(threshold)).inV().in_('track_feature').in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+if result is not None and len(venue_set) != 0:
+    venue_set = set(result) & venue_set
+elif result is not None:
+    venue_set = result
+
+end = time.time()
+print('Search For audio feature Finished : ', datetime.timedelta(seconds=end-start))
+#print(venue_set)
+
+#Search for Instrument
+start = time.time()
+result1=None
+result2=None
+threshold = 0.6
+if inp['audio_feature']['instrument'] is not None or inp['audio_feature']['chords'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
+    with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
+        mapping = json.loads(f.readline())
+    #print(N.g.V().hasLabel('track').map(lambda : "x->x.values('id')").next())
+    for track in N.g.V().hasLabel('track').toList():
+        if inp['audio_feature']['chords'] is not None: 
+            if get_similarity(N.g.V(track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > threshold:
                 if result1 is None:
                     result1 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
                 else:
                     result1 = result1 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+            if inp['audio_feature']['chords'] is not None:
+                if jaccard_similarity_chord(set(N.g.V(track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > threshold:
+                    if result2 is None:
+                        result2 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
+                    else:
+                        result2 = result2  | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList()) 
 
-            
-    if inp['audio_feature']['instrument'] is not None:
-        if get_similarity(N.g.V(track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > 0.6:
-            if result2 is None:
-                result2 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-            else:
-                result2 = result2 | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-    if inp['audio_feature']['chords'] is not None:
-        if jaccard_similarity_chord(set(N.g.V(track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > 0.6:
-            if result3 is None:
-                result3 = set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-            else:
-                result3 = result3  | set(N.g.V(track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-end = time.time()
-print('Search For track Finished : ', datetime.timedelta(seconds=end-start))
-
-for r in [result1, result2, result3]:
+for r in [result1, result2]:
     if r is not None:
         if len(venue_set) == 0:
             venue_set = r
         else:
             venue_set = venue_set & r
 
-#Search For Audio_feature
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['tempo'] is not None and  inp['audio_feature']['danceability'] is not None and \
-#     inp['audio_feature']['loudness'] is not None and inp['audio_feature']['valence'] is not None and  inp['audio_feature']['energy'] is not None:
-#     audio_feature = [inp['audio_feature']['tempo'] , inp['audio_feature']['danceability'] ,inp['audio_feature']['loudness'] , inp['audio_feature']['valence'] , inp['audio_feature']['energy']]
-#     res = N.g.V().hasLabel('audio_feature').valueMap().toList()
-    
+end = time.time()
+print('Search For instrument, chords Finished : ', datetime.timedelta(seconds=end-start))
+#print(venue_set)
+# time.sleep(3)
 
-#     for feature in res:
-#         s = cosine_similarity(feature, audio_feature, threshold)
-#         if s:
-#             s = feature['id'][0]
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result | set(N.g.V().hasLabel('track').has('id', s).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-# print(len(result))   
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result
-
-# end = time.time()
-#print('Search For audio feature Finished : ', datetime.timedelta(seconds=end-start))
-# print(venue_set)
-#exit()
-
-#Search for Instrument
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['instrument'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
-#     for track in N.g.V().hasLabel('track').values('id').toList():
-#         with open('/home/ec2-user/Graph-DB-for-music/instrument', 'rt', encoding='UTF8') as f:
-#             mapping = json.loads(f.readline())
-
-#         if get_similarity(N.g.V().hasLabel('track').has('id', track).out('track_instrument').values('name').toList(), inp['audio_feature']['instrument'], mapping) > threshold:
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-    
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result  
-
-# end = time.time()
-# print('Search For instrument Finished : ', datetime.timedelta(seconds=end-start))
-# #print(venue_set)
-# # time.sleep(3)
-
-# #Search For Chords
-# start = time.time()
-# result=None
-# threshold = 0.6
-# if inp['audio_feature']['chords'] is not None: #and inp['track']['name'] is None and inp['track']['id'] is None:
-#     #print(inp['audio_feature']['chords'])
-#     for track in N.g.V().hasLabel('track').values('id').toList():
-#         if jaccard_similarity_chord(set(N.g.V().hasLabel('track').has('id', track).out('track_chord').values('chord').toList()), set(inp['audio_feature']['chords'])) > threshold:
-#             if result is None:
-#                 result = set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-#             else:
-#                 result = result  | set(N.g.V().hasLabel('track').has('id', track).in_('artist_track').out('artist_event').in_('venue_event').dedup().values('id').toList())
-# if result is not None and len(venue_set) != 0:
-#     venue_set = set(result) & venue_set
-# elif result is not None:
-#     venue_set = result 
-
-# end = time.time()
-
-# print('Search For chords Finished : ', datetime.timedelta(seconds=end-start))
 
 v = []
 #print(venue_set)
 for venue in venue_set:
     v.append(N.g.V().hasLabel('venue').has('id', venue).values('name').next())
-print(v)
+
+
+def get_recommended_date(start_dates, end_dates):
+    valid_weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    valid_times = ["morning", "afternoon", "evening", "night"]
+    valid_datetime_formats = ["%Y-%m-%d %H:%M:%S", "%m/%d/%Y %I:%M %p", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]
+
+    event_dates = []
+    for start, end in zip(start_dates, end_dates):
+        for date_format in valid_datetime_formats:
+            try:
+                start_datetime = datetime.datetime.strptime(start, date_format)
+                end_datetime = datetime.datetime.strptime(end, date_format)
+                event_dates.append((start_datetime, end_datetime))
+                break
+            except ValueError:
+                pass
+
+    if not event_dates:
+        return None
+    weekday_counts = {day: 0 for day in valid_weekdays}
+    time_counts = {time: 0 for time in valid_times}
+
+    for start, end in event_dates:
+        day = start.strftime('%A')
+        if day in weekday_counts:
+            weekday_counts[day] += 1
+        for time, time_range in zip(valid_times, [(6, 12), (12, 17), (17, 20), (20, 24)]):
+            if time_range[0] <= start.hour < time_range[1]:
+                time_counts[time] += 1
+
+    recommended_weekday = max(weekday_counts, key=weekday_counts.get)
+    recommended_time = max(time_counts, key=time_counts.get)
+
+    return (recommended_weekday, recommended_time)
+
+#Prediction For Time
+print_result = []
+start = time.time()
+for venue in v:
+    edges = N.g.V().hasLabel('venue').has('name', venue).out('venue_event').valueMap().toList()
+    #print(edges)
+    startdates = [e['startDate'][0] for e in edges]
+    enddates = [e['endDate'][0] for e in edges if 'endDate' in e.keys()]
+
+
+    a  = get_recommended_date(startdates, enddates)
+    print_result.append((venue, a))
+
+end = time.time()
+
+print('Search For Date Finished : ', datetime.timedelta(seconds=end-start) )
+print(print_result)
+# extract day of the week from start and end dates
+    # df['start_day'] = df['start_date'].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%S').strftime('%A'))
+    # df['end_day'] = df['end_date'].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime('%A'))
+
+    #print(df)
+# # extract time from start and end dates
+#     df['start_time'] = df['start_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').time())
+#     df['end_time'] = df['end_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').time())
+
+# # determine the most frequently occurring day of the week
+#     most_frequent_day = df['start_day'].mode().values[0]
+
+# # determine the most frequently occurring time range
+#     time_ranges = df.groupby(['start_time', 'end_time']).size().reset_index(name='counts')
+#     most_frequent_time_range = time_ranges.loc[time_ranges['counts'].idxmax()][['start_time', 'end_time']]
+
 
     # p = N.g.V().hasLabel("audio_feature").map(lambda vertex: vertex)
     # print(p)

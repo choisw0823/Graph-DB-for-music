@@ -1,9 +1,10 @@
-from neptune import Neptune
+import neptune
 import json 
 import time 
 import hashlib
+import numpy as np
 
-N = Neptune()
+N = neptune.Neptune()
 contents=[]
 genres = []
 contents2=[]
@@ -322,9 +323,26 @@ def edge_get_related_artist_result():
             print(str(i), 'th Line finished ', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
         except Exception as e:
             print('Error occured during making edges in get_related_artist_result.json : ', e)
+def cosine_similarity(a, b):
+    compare = [a['tempo'][0], a['danceability'][0], a['loudness'][0], a['valence'][0], a['energy'][0]]
+    compare2 = [b['tempo'][0], b['danceability'][0], b['loudness'][0], b['valence'][0], b['energy'][0]]
+    dot_product = np.dot(compare, compare2)
+    magnitude_a = np.sqrt(np.dot(compare, compare))
+    magnitude_b = np.sqrt(np.dot(compare2, compare2))
 
+    return dot_product / (magnitude_a * magnitude_b)
+        
 
-
+def similarity_between_audio_feature():
+    print('Make Similarity Edge between Audio Feature')
+    features = N.g.V().hasLabel('audio_feature').valueMap().toList()
+    print(len(features))
+    for i in range(len(features)):
+        for j in range(i, len(features)):
+            s = cosine_similarity(features[i], features[j])
+            N.g.addE('similarity').from_(neptune.__.V().hasLabel('audio_feature').has('id', features[i]['id'][0])).to(neptune.__.V().hasLabel('audio_feature').has('id', features[j]['id'][0])).property('value', s).next()
+            N.g.addE('similarity').from_(neptune.__.V().hasLabel('audio_feature').has('id', features[j]['id'][0])).to(neptune.__.V().hasLabel('audio_feature').has('id', features[i]['id'][0])).property('value', s).next()
+            print('Edge From {} to {} finished : {}'.format(i, j, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
 
 #edge_analyze_result()
 #vertex_event_analyze_result()
@@ -439,38 +457,39 @@ def edge_get_related_artist_result():
 # print(len(N.get_nodes_by_label('state')))
 # print(len(N.get_nodes_by_label('venue')))
 
-with open('./test2', 'wt') as f:
-    total = {}
-    split = ['.', ',', '/', '(', ')', '-', "'", '"', '-', '_', '#', '+','\\','1','2','3','4','5','6','7','8','9','0','<', '>', '{', '}', '=', '*' ]
-    for instrument in (N.g.V().hasLabel('instrument').values('name').toList()):
-        # if instrument not in total.keys():
-        #     total[instrument] = 1
-        # else:
-        #     total[instrument]+=1
-        for s in split:
-            r = instrument.lower()
-            r = r.replace(s, ' ')
+# with open('./test2', 'wt') as f:
+#     total = {}
+#     split = ['.', ',', '/', '(', ')', '-', "'", '"', '-', '_', '#', '+','\\','1','2','3','4','5','6','7','8','9','0','<', '>', '{', '}', '=', '*' ]
+#     for instrument in (N.g.V().hasLabel('instrument').values('name').toList()):
+#         # if instrument not in total.keys():
+#         #     total[instrument] = 1
+#         # else:
+#         #     total[instrument]+=1
+#         for s in split:
+#             r = instrument.lower()
+#             r = r.replace(s, ' ')
         
-        li = r.split()
-        for l in li:
-            for s in split:
-                l = l.replace(s, ' ')
+#         li = r.split()
+#         for l in li:
+#             for s in split:
+#                 l = l.replace(s, ' ')
             
-            for i in l.split():
-                if i in total.keys():
-                    total[i] += 1
-                else:
-                    total[i] = 1
+#             for i in l.split():
+#                 if i in total.keys():
+#                     total[i] += 1
+#                 else:
+#                     total[i] = 1
                     
-    # result = []
-    # for i in total.keys():
-    #     print(i)
+#     # result = []
+#     # for i in total.keys():
+#     #     print(i)
         
-    #     a = input('Y or N : ')
-    #     if a == 'Y':
-    #         result.append(i)
-    # print(result)
-    #print(total)
-    f.write(json.dumps(list(total.keys())))
+#     #     a = input('Y or N : ')
+#     #     if a == 'Y':
+#     #         result.append(i)
+#     # print(result)
+#     #print(total)
+#     f.write(json.dumps(list(total.keys())))
 
 
+similarity_between_audio_feature()
